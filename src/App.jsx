@@ -1,6 +1,8 @@
 import { useState } from "react";
 import "./index.css";
 import AuthForm from "./AuthForm";
+import SuccessScreen from "./successScreen";
+import LoginForm from "./LoginForm";
 
 function App() {
   // Home page
@@ -36,15 +38,23 @@ function App() {
       {currentPage === "register" && (
         <AuthForm
           onBack={() => setCurrentPage("home")}
+          onSuccess={() => setCurrentPage("success")}
         />
       )}
 
+        {currentPage === "success" && (
+        <SuccessScreen onContinue={() => setCurrentPage("login")} />
+      )}
+
       {currentPage === "login" && (
-        <AuthForm
+        <LoginForm
           onBack={() => setCurrentPage("home")}
+          onRegisterClick={() => setCurrentPage("register")}
+          onLoginSuccess={() => alert("Login successful! Redirecting to Main Huddle Interface...")}
         />
       )}
-        </div>
-      )}
+    </div>
+  );
+}
 
 export default App;

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export default function AuthForm({  onBack }) {
+export default function AuthForm({  onBack, onSuccess }) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -35,6 +35,9 @@ const passwordError = validatePassword(formData.password);
     }
 
 console.log('Form valid! Submitting:', formData);
+if (onSuccess) {
+        onSuccess();
+    }
 };
 
 return (
