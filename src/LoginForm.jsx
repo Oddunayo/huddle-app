@@ -1,6 +1,10 @@
 import { useState } from "react";
-
-export default function LoginForm({ onBack, onRegisterClick, onLoginSuccess }) {
+export default function LoginForm({
+  onBack,
+  onRegisterClick,
+  onLoginSuccess,
+  onForgotPasswordClick,
+}) {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -78,7 +82,15 @@ export default function LoginForm({ onBack, onRegisterClick, onLoginSuccess }) {
           >
             Log in
           </button>
+          <button
+        type="button"
+        onClick={onForgotPasswordClick}
+        className="text-blue-500 hover:underline"
+        >
+          Forgot Password?
+        </button>
         </form>
+        
         <div className="mt-6 text-center text-sm *:text-gray-600">
             Don't have an account?{" "}
             <button onClick={onRegisterClick} className="text-blue-500 hover:underline">

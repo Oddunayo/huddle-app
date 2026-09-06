@@ -2,7 +2,9 @@ import { useState } from "react";
 import "./index.css";
 import AuthForm from "./AuthForm";
 import SuccessScreen from "./successScreen";
-import LoginForm from "./LoginForm";
+import LoginForm from "./LoginForm"
+import ForgotPassword from "./ForgotPassword";
+import ResetPasswordForm from "./ResetPasswordForm";
 
 function App() {
   // Home page
@@ -50,7 +52,21 @@ function App() {
         <LoginForm
           onBack={() => setCurrentPage("home")}
           onRegisterClick={() => setCurrentPage("register")}
-          onLoginSuccess={() => alert("Login successful! Redirecting to Main Huddle Interface...")}
+          onForgotPasswordClick={() => setCurrentPage("forgot-password")}
+          onLoginSuccess={() => setCurrentPage("channels")}
+        />
+      )}
+
+      {currentPage === "forgot-password" && (
+        <ForgotPassword
+          onBack={() => setCurrentPage("login")}
+          onVerificationSuccess={() => setCurrentPage("reset-password")}
+        />
+      )}
+
+      {currentPage === "reset-password" && (
+        <ResetPasswordForm
+          onResetSuccess={() => setCurrentPage("login")}
         />
       )}
     </div>
