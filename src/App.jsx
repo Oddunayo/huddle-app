@@ -5,7 +5,7 @@ import SuccessScreen from "./successScreen";
 import LoginForm from "./LoginForm"
 import ForgotPassword from "./ForgotPassword";
 import ResetPasswordForm from "./ResetPasswordForm";
-import {MessageSqaure} from "lucide-react"
+import {MessagesSquare} from "lucide-react"
 import Carousel from "./Carousel";
 
 function App() {
@@ -17,7 +17,7 @@ function App() {
       {currentPage === "home" && (
         <div className="max-w-md text-center space-y-6">
           <div className="flex items-center justify-center gap-2">
-            <MessageSqaure className="w-8 h-8 text-blue-500" strokeWidth={2.5}/>
+            <MessagesSquare className="w-8 h-8 text-blue-500" strokeWidth={2.5}/>
              <h1 className="text-3xl font-bold text-gray-900">HUDDLE</h1>
           </div>
 
