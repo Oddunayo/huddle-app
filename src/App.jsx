@@ -5,6 +5,8 @@ import SuccessScreen from "./successScreen";
 import LoginForm from "./LoginForm"
 import ForgotPassword from "./ForgotPassword";
 import ResetPasswordForm from "./ResetPasswordForm";
+import {MessageSqaure} from "lucide-react"
+import Carousel from "./Carousel";
 
 function App() {
   // Home page
@@ -14,16 +16,24 @@ function App() {
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
       {currentPage === "home" && (
         <div className="max-w-md text-center space-y-6">
-          <h1 className="text-4xl font-bold text-blue-500">Huddle 💬</h1>
-          <p className="text-gray-600">
-            A medium to connect to teams in real time. Simple, fast and
-            organised channel messaging platform.
-          </p>
+          <div className="flex items-center justify-center gap-2">
+            <MessageSqaure className="w-8 h-8 text-blue-500" strokeWidth={2.5}/>
+             <h1 className="text-3xl font-bold text-gray-900">HUDDLE</h1>
+          </div>
 
-          <div className="flex flex-col gap-3">
+          <Carousel />
+
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold text-gray-900">Welcome to Huddle</h2>
+            <p className="text-gray-500 text-sm px-2">
+              A simple way for teams to chat, collaborate, and get things done.
+             </p>
+          </div>
+
+          <div className="flex flex-col gap-3 pt-2">
             <button
               onClick={() => setCurrentPage("register")}
-              className="w-full bg-blue-500 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200"
             >
               Create an Account
             </button>
