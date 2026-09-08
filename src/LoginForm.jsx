@@ -1,118 +1,134 @@
 import { useState } from "react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { InputField } from "./InputField";
 
 export default function LoginForm({
-  onBack,
   onRegisterClick,
   onLoginSuccess,
   onForgotPasswordClick,
 }) {
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
-
   const [isLoading, setIsLoading] = useState(false);
+
+  const isFormValid =
+    formData.email.trim() !== "" && formData.password.trim() !== "";
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({...prevData, [name]: value }));
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setErrorMessage('');
+    if (!isFormValid || isLoading) return;
+
+    setErrorMessage("");
+
     setIsLoading(true);
 
-    // Simple validation (will replace with actual authentication logic)
-    if (!formData.email || !formData.password) {
-      setErrorMessage('Please fill in all fields.');
-      setIsLoading(false);
-      return;
-    }
-
-    console.log('Login submitted:', formData);
     setTimeout(() => {
       setIsLoading(false);
       if (onLoginSuccess) {
-      onLoginSuccess();
-    }
+        onLoginSuccess();
+      }
     }, 1500);
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
-      <div className="w-full max-w-md bg-white p-6 rounded-lg shadow-md">
-        <button onClick={onBack} className="text-sm text-blue-500 hover:underline mb-4">
-          ← Back
-        </button>
-        <h2 className="mb-6 text-2xl font-bold text-center text-gray-800">
-          Welcome Back! Please Log In ✔
-        </h2>
+    <div className="w-full max-w-md bg-white rounded-3xl p-6 shadow-sm text-left space-y-6">
+      <div className="space-y-1">
+        <h2 className="text-2xl font-bold text-gray-900">Welcome back</h2>
+        <p className="text-gray-500 text-sm">Sign in to your account.</p>
+      </div>
 
-        {errorMessage && (
-          <div className="mb-4 rounded bg-red-100 p-3 text-sm text-red-700">
-            {errorMessage}
-          </div>
-        )}
+      {errorMessage && (
+        <div className="rounded-xl bg-red-50 p-3 text-sm text-red-600 border border-red-100">
+          {errorMessage}
+        </div>
+      )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <InputField
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <InputField
           label="Email Address"
           type="email"
           name="email"
           value={formData.email}
           onChange={handleChange}
           disabled={isLoading}
-          placeholder="Enter your email"
+          placeholder="you@team.com"
           required
+        />
+        <div>
+          <InputField
+            label="Password"
+            type={showPassword ? "text" : "password"}
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            disabled={isLoading}
+            placeholder="......."
+            required
+            icon={
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="text-gray-400 hover:text-gray-600 flex items-center"
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
+            }
           />
 
-        <InputField
-        label="Password"
-        type="password"
-        name="password"
-        value={formData.password}
-        onChange={handleChange}
-        disabled={isLoading}
-        placeholder="......."
-        required
-        />
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200"
-          >
-            {isLoading ? (
-              <span className="flex items-center gap-2">
-                <svg className="h-5 w-5 animate-spin text-white" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Loading...
-              </span>
-            ) : (
-            'Login'
-          )}
-          </button>
-          <button
-        type="button"
-        onClick={onForgotPasswordClick}
-        className="text-blue-500 hover:underline"
-        >
-          Forgot Password?
-        </button>
-        </form>
-        
-        <div className="mt-6 text-center text-sm *:text-gray-600">
-            Don't have an account?{" "}
-            <button onClick={onRegisterClick} className="text-blue-500 hover:underline">
-              Sign up to create an account
+          <div className="flex justify-end mt-1.5">
+            <button
+              type="button"
+              onClick={onForgotPasswordClick}
+              className="text-xs text-[#5C54E5] font-semibold hover:underline cursor-pointer"
+            >
+              Forgot password?
             </button>
+          </div>
         </div>
-      </div>
+
+        <button
+          type="submit"
+          disabled={!isFormValid || isLoading}
+          className={`w-full font-semibold py-3.5 px-4 rounded-full transition duration-200 mt-2 flex items-center justify-center gap-2 ${
+            isFormValid && !isLoading
+              ? "bg-[#5C54E5] hover:bg-[#4B43D1] text-white cursor-pointer shadow-xs"
+              : "bg-gray-200 text-gray-400 cursor-not-allowed"
+          }`}
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span>Signing in...</span>
+            </>
+          ) : (
+            "Sign In"
+          )}
+        </button>
+
+        <p className="text-center text-xs text-gray-500 pt-1">
+          Don't have an account?{" "}
+          <button
+            type="button"
+            onClick={onRegisterClick}
+            className="text-[#5C54E5] font-semibold hover:underline cursor-pointer"
+          >
+            Create one
+          </button>
+        </p>
+      </form>
     </div>
   );
 }
