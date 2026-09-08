@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { InputField } from './InputField';
 
 export default function ForgotPassword({ onBack, onVerificationSuccess }) {
     const [step, setStep] = useState('email');
@@ -6,11 +7,13 @@ export default function ForgotPassword({ onBack, onVerificationSuccess }) {
     const [code, setCode] = useState('');
     const [errorMessage, setErrorMessage] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleRequestCode = (e) => {
         e.preventDefault();
         if (!email) {
             setErrorMessage('Please enter your email address.');
+            setIsLoading(false);
             return;
         }
         setErrorMessage(null);
@@ -22,12 +25,14 @@ export default function ForgotPassword({ onBack, onVerificationSuccess }) {
         e.preventDefault();
         if (!code) {
             setErrorMessage('Please enter the verification code.');
+            setIsLoading(false);
             return;
         }
         setErrorMessage(null);
         console.log(`Verifying code: ${code}`);
         setSuccessMessage('Verification successful! You can now reset your password.');
         setTimeout(() => {
+            setIsLoading(false)
             onVerificationSuccess();
         }, 1500);
     };
@@ -42,18 +47,33 @@ export default function ForgotPassword({ onBack, onVerificationSuccess }) {
                 {successMessage && <p className="text-green-500">{successMessage}</p>}
                 {step === 'email' && (
                     <form onSubmit={handleRequestCode} className="space-y-4">
-                        <input
+                        <InputField
+                        label="Email Address"
                             type="email"
+                            name="email"
                             placeholder="Enter your email address"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
+                            disabled={isLoading}
+                            required
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                         <button
                             type="submit"
+                            disabled={isLoading}
                             className="w-full bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200"
                         >
-                            Request Verification Code
+                            {isLoading ? (
+                                <span className="flex items-center gap-2">
+                                    <svg className="h-5 w-5 animate-spin text-white" viewBox="0 0 24 24" fill="none">
+                                        <circle className="opacity-75" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>  
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>                 
+                                                       </svg>
+                                                       Sending Code...
+                                </span>
+                            ) : (
+                                'Send reset Code'
+                            )}
                         </button>
                     </form>
                 )}
@@ -64,13 +84,26 @@ export default function ForgotPassword({ onBack, onVerificationSuccess }) {
                             placeholder="Enter the verification code"
                             value={code}
                             onChange={(e) => setCode(e.target.value)}
+                            disabled={isLoading}
+                            required
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                         <button
                             type="submit"
+                            disabled={isLoading}
                             className="w-full bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200"
                         >
-                            Verify Code
+                            {isLoading ? (
+                                <span className="flex items-center gap-2">
+                                    <svg className="h-5 w-5 animate-spin text-white" viewBox="0 0 24 24" fill="none">
+                                        <circle className="opacity-75" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>  
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>                 
+                                                       </svg>
+                                                       Verifying.
+                                </span>
+                            ) : (
+                        'Verify Code'
+                            )}
                         </button>
                     </form>
                 )}

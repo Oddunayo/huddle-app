@@ -1,4 +1,6 @@
 import {useState} from "react";
+import { InputField } from './InputField';
+
 export default function ResetPasswordForm({ onResetSuccess }) {
   const [formData, setFormData] = useState({
     password: '',

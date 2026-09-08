@@ -1,56 +1,60 @@
-import { useState} from "react";
+import { useState } from "react";
+import { MessageSquare } from "lucide-react";
 
 const slides = [
-    {
-        image: "/huddle-team.jpg",
-        title: "Great teams build together",
-        caption: " Chat, share ideas, and stay connected."
-    },
-    {
-        image: "/huddle-team 2.jpg",
-        title: "Real-time collaboration",
-        caption: " Communicate seamlessly with your team in real-time."
-    }
-];                                  
+  {
+    image: "/huddle-team.jpg",
+    title: "Great teams build together",
+    caption: "Chat, share ideas, and stay connected.",
+  },
+  {
+    image: "/huddle-team 2.jpg",
+    title: "Real-time collaboration",
+    caption: "Communicate seamlessly with your team in real-time.",
+  },
+];
 
 function Carousel() {
-    const [activeIndex, setActiveIndex] = useState(0);
-    const slide = slides[activeIndex];
+  const [activeIndex, setActiveIndex] = useState(0);
+  const slide = slides[activeIndex];
 
-    return (
-        <div className="relative w-full h-64 rounded-2xl overflow-hidden shadow-md">
-            <img
-                src={slide.image}
-                alt={slide.title}
-                className="w-full h-full object-cover"
-                />
+  return (
+    <div className="space-y-3 w-full">
+      <div className="relative w-full h-52 rounded-2xl overflow-hidden shadow-sm">
+        <img
+          src={slide.image}
+          alt={slide.title}
+          className="w-full h-full object-cover"
+        />
 
-                {/* Dark gradient so text is readable over the photo */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"></div>
+<div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-transparent p-4 flex flex-col justify-start text-left">
+  <div className="flex items-center gap-1.5 text-xs font-bold text-[#5C54E5] mb-2 bg-white px-2.5 py-1 rounded-full w-max shadow-md">
+    <MessageSquare className="h-3.5 w-3.5 fill-[#5C54E5] text-[#5C54E5]" />
+    <span>Huddle</span>
+  </div>
+  <h3 className="text-xl font-black text-white leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+    {slide.title}
+  </h3>
+  <p className="text-xs font-semibold text-gray-100 mt-1 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
+    {slide.caption}
+  </p>
+</div>
+      </div>
 
-                {/* text overlay */}
-                <div className="absolute bottom-8 left-4 right-4 text-white text-left">
-                    <p className="text-xs font-semibold uppercase tracking-wide opacity-90">
-                     Huddle
-                    </p>
-                    <h3 className="text-lg font-bold leading-snug">{slide.title}</h3>
-                    <p className="text-sm opacity-90">{slide.caption}</p>
-                </div>
-
-{/* Dot indicators */}
-<div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
-    {slides.map((_, index) => (
-        <button
+      <div className="flex justify-center gap-1.5">
+        {slides.map((_, index) => (
+          <button
             key={index}
             onClick={() => setActiveIndex(index)}
-            className={`h-1.5 rounded-full transition-all ${index === activeIndex ? ' w-4 bg-white' : 'w-1.5 bg-white/50'}`}
+            className={`h-2 rounded-full transition-all ${
+              index === activeIndex ? "w-2 bg-[#5C54E5]" : "w-2 bg-gray-300"
+            }`}
             aria-label={`Go to slide ${index + 1}`}
-        />
-    ))}
-</div>
-
-</div>
-    );
+          />
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export default Carousel;

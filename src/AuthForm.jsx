@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { InputField } from './InputField';
 
 export default function AuthForm({  onBack, onSuccess }) {
   const [formData, setFormData] = useState({
@@ -7,6 +8,7 @@ export default function AuthForm({  onBack, onSuccess }) {
     password: '',
   });
 const [errorMessage, setErrorMessage] = useState(null);
+const [isLoading, setisLoading] = useState(false)
 
 const validatePassword = (password) => {
     const hasUpperCase = /[A-Z]/.test(password);
@@ -27,14 +29,17 @@ const handleChange = (e) => {
 const handleSubmit = (e) => {
     e.preventDefault();
     setErrorMessage(null);
+    setisLoading(true)
 
 const passwordError = validatePassword(formData.password);
     if (passwordError) {
         setErrorMessage(passwordError);
+        setisLoading(false);
         return;
     }
 
 console.log('Form valid! Submitting:', formData);
+setisLoading(false)
 if (onSuccess) {
         onSuccess();
     }
@@ -56,41 +61,38 @@ return (
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                        Full Name
-                    </label>
-                    <input
+                    <InputField 
+                    label="Full Name"
                         type="text"
-                        id="name"
                         name="name"
                         value={formData.name}
                         onChange={handleChange}
+                        disabled={isLoading}
+                        required
                         className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                     />
                 </div>
                 <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                        Email
-                    </label>
-                    <input
+                    <InputField
+                    label="Email Address"
                         type="email"
-                        id="email"
                         name="email"
                         value={formData.email}
                         onChange={handleChange}
+                        disabled={isLoading}
+                        required
                         className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                     />
                 </div>
                 <div>
-                    <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                        Password
-                    </label>
-                    <input
+                    <InputField
+                    label="password"
                         type="password"
-                        id="password"
                         name="password"
                         value={formData.password}
                         onChange={handleChange}
+                        disabled={isLoading}
+                        required
                         className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                     />
                 </div>
