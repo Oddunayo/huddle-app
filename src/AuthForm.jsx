@@ -1,110 +1,179 @@
-import { useState } from 'react';
-import { InputField } from './InputField';
+import { useState } from "react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { InputField } from "./InputField";
 
-export default function AuthForm({  onBack, onSuccess }) {
+export default function AuthForm({ onBack, onSuccess, onLoginClick }) {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
+    name: "",
+    email: "",
+    password: "",
   });
-const [errorMessage, setErrorMessage] = useState(null);
-const [isLoading, setisLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-const validatePassword = (password) => {
-    const hasUpperCase = /[A-Z]/.test(password);
-    const hasNumber = /[0-9]/.test(password);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  const checks = {
+    length: formData.password.length >= 8,
+    upper: /[A-Z]/.test(formData.password),
+    lower: /[a-z]/.test(formData.password),
+    number: /[0-9]/.test(formData.password),
+    special: /[!@#$%^&*(),.?":{}|<>]/.test(formData.password),
+  };
 
-    if (!hasUpperCase) return 'Password must contain at least one uppercase letter.';
-    if (!hasNumber) return 'Password must contain at least one number.';
-    if (!hasSpecialChar) return 'Password must contain at least one special character.';
-    return null;
-};
+  const isPasswordValid = Object.values(checks).every(Boolean);
+  const isFormValid =
+    formData.name.trim() !== "" &&
+    formData.email.trim() !== "" &&
+    isPasswordValid;
 
-const handleChange = (e) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({...prevData, [name]: value }));
-};
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
+  };
 
-const handleSubmit = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setErrorMessage(null);
-    setisLoading(true)
 
-const passwordError = validatePassword(formData.password);
-    if (passwordError) {
-        setErrorMessage(passwordError);
-        setisLoading(false);
-        return;
+    const allValid = Object.values(checks).every(Boolean);
+    if (!allValid) {
+      setErrorMessage("Please fulfill all password requirements.");
+      return;
     }
 
-console.log('Form valid! Submitting:', formData);
-setisLoading(false)
-if (onSuccess) {
+    setIsLoading(true);
+
+    setTimeout(() => {
+      setIsLoading(false);
+      if (onSuccess) {
         onSuccess();
-    }
-};
+      }
+    }, 2000);
+  };
 
-return (
-    <div className= "flex min-h-screen items-center justify-center bg-gray-100 p-4">
-        <div className="w-full max-w-md bg-white p-6 rounded-lg shadow-md">
-            <button onClick={onBack} className="text-sm text-blue-500 hover:underline mb-4">
-                ← Back
-            </button>
-            <h2 className= "mb-6 text-2-l font-bold text=center text-gray-800">
-                Create an Account ✔
-            </h2>
+  return (
+    <div className="w-full max-w-md bg-white rounded-3xl p-6 shadow-sm text-left space-y-6">
+      <div className="space-y-1">
+        <h2 className="text-2xl font-bold text-gray-900">
+          Create your account
+        </h2>
+        <p className="text-gray-500 text-sm">Join your team on Huddle.</p>
+      </div>
 
-            {errorMessage && (
-                <div className="mb-4 rounded bg-red-100 p-3 text-sm text-red-700">{errorMessage}</div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                    <InputField 
-                    label="Full Name"
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        disabled={isLoading}
-                        required
-                        className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                    />
-                </div>
-                <div>
-                    <InputField
-                    label="Email Address"
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        disabled={isLoading}
-                        required
-                        className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                    />
-                </div>
-                <div>
-                    <InputField
-                    label="password"
-                        type="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        disabled={isLoading}
-                        required
-                        className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                    />
-                </div>
-
-                <button
-                    type="submit"
-                    className="w-full bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200"
-                >
-                    Sign Up
-                </button>
-            </form>
+      {errorMessage && (
+        <div className="rounded-xl bg-red-50 p-3 text-sm text-red-600 border border-red-100">
+          {errorMessage}
         </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <InputField
+          label="Full name"
+          type="text"
+          name="name"
+          placeholder="Jane Doe"
+          value={formData.name}
+          onChange={handleChange}
+          disabled={isLoading}
+          required
+        />
+
+        <InputField
+          label="Email"
+          type="email"
+          name="email"
+          placeholder="you@team.com"
+          value={formData.email}
+          onChange={handleChange}
+          disabled={isLoading}
+          required
+        />
+
+        <InputField
+          label="Password"
+          type={showPassword ? "text" : "password"}
+          name="password"
+          placeholder="Min. 8 chars, A-Z, 0-9, !@#..."
+          value={formData.password}
+          onChange={handleChange}
+          disabled={isLoading}
+          required
+          icon={
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="text-gray-400 hover:text-gray-600 flex items-center"
+            >
+              {showPassword ? (
+                <EyeOff className="w-4 h-4" />
+              ) : (
+                <Eye className="w-4 h-4" />
+              )}
+            </button>
+          }
+        />
+
+        <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 text-xs space-y-2">
+          <p className="font-semibold tracking-wider text-gray-400 uppercase text-[10px]">
+            Password Requirements
+          </p>
+          <ul className="space-y-1">
+            <li
+              className={`flex items-center gap-2 ${checks.length ? "text-green-600" : "text-gray-400"}`}
+            >
+              <span>{checks.length ? "✓" : "•"}</span> 8+ characters
+            </li>
+            <li
+              className={`flex items-center gap-2 ${checks.upper ? "text-green-600" : "text-gray-400"}`}
+            >
+              <span>{checks.upper ? "✓" : "•"}</span> Uppercase (A-Z)
+            </li>
+            <li
+              className={`flex items-center gap-2 ${checks.lower ? "text-green-600" : "text-gray-400"}`}
+            >
+              <span>{checks.lower ? "✓" : "•"}</span> Lowercase (a-z)
+            </li>
+            <li
+              className={`flex items-center gap-2 ${checks.number ? "text-green-600" : "text-gray-400"}`}
+            >
+              <span>{checks.number ? "✓" : "•"}</span> Number (0-9)
+            </li>
+            <li
+              className={`flex items-center gap-2 ${checks.special ? "text-green-600" : "text-gray-400"}`}
+            >
+              <span>{checks.special ? "✓" : "•"}</span> Special (!@#...)
+            </li>
+          </ul>
+        </div>
+        <button
+          type="submit"
+          disabled={!isFormValid || isLoading}
+          className={`w-full font-semibold py-3.5 px-4 rounded-full transition duration-200 mt-2 ${isFormValid && !isLoading
+              ? "bg-[#5C54E5] hover:bg-[#4B43D1] text-white cursor-pointer shadow-xs"
+              : "bg-gray-200 text-gray-400 cursor-not-allowed"
+            }`}
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span>Creating Account...</span>
+            </>
+          ) : (
+            'Create Account'
+          )}
+        </button>
+
+        <p className="text-center text-xs text-gray-500 pt-1">
+          Already have an account?{" "}
+          <button
+            type="button"
+            onClick={onLoginClick || onBack}
+            className="text-[#5C54E5] font-semibold hover:underline"
+          >
+            Sign in
+          </button>
+        </p>
+      </form>
     </div>
-);
+  );
 }

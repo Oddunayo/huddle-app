@@ -51,6 +51,7 @@ function App() {
         <AuthForm
           onBack={() => setCurrentPage("home")}
           onSuccess={() => setCurrentPage("success")}
+          onLoginClick={() => setCurrentPage("login")}
         />
       )}
 
