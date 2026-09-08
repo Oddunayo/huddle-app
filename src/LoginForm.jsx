@@ -56,7 +56,7 @@ export default function LoginForm({
   return (
     <div className="w-full max-w-md bg-white rounded-3xl p-6 shadow-sm text-left space-y-6">
       <div className="space-y-1">
-        <h2 className="text-2xl font-bold text-gray-900">Welcome back</h2>
+        <h2 className="text-2xl font-bold text-gray-900">Welcome back 👋</h2>
         <p className="text-gray-500 text-sm">Sign in to your account.</p>
       </div>
 
@@ -144,7 +144,7 @@ export default function LoginForm({
             onClick={onRegisterClick}
             className="text-[#5C54E5] font-semibold hover:underline cursor-pointer"
           >
-            Create one
+            Sign up an account
           </button>
         </p>
       </form>
