@@ -14,6 +14,7 @@ export default function LoginForm({
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({ email: "", password: "" });
 
   const isFormValid =
     formData.email.trim() !== "" && formData.password.trim() !== "";
@@ -21,6 +22,10 @@ export default function LoginForm({
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
+
+    if (fieldErrors[name]) {
+      setFieldErrors((prev) => ({ ...prev, [name]: "" }));
+    }
   };
 
   const handleSubmit = (e) => {
@@ -28,11 +33,20 @@ export default function LoginForm({
     if (!isFormValid || isLoading) return;
 
     setErrorMessage("");
-
+    setFieldErrors({ email: "", password: "" });
     setIsLoading(true);
 
     setTimeout(() => {
       setIsLoading(false);
+
+      /* if (formData.email !== "user@team.com") {
+        setFieldErrors({
+          email: "Invalid email address or account not found.",
+          password: "Incorrect password. Please try again.",
+        });
+        return;
+      } */
+
       if (onLoginSuccess) {
         onLoginSuccess();
       }
@@ -53,6 +67,7 @@ export default function LoginForm({
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Email Field with Error */}
         <InputField
           label="Email Address"
           type="email"
@@ -61,8 +76,11 @@ export default function LoginForm({
           onChange={handleChange}
           disabled={isLoading}
           placeholder="you@team.com"
+          error={fieldErrors.email}
           required
         />
+
+        {/* Password Field with Error */}
         <div>
           <InputField
             label="Password"
@@ -72,6 +90,7 @@ export default function LoginForm({
             onChange={handleChange}
             disabled={isLoading}
             placeholder="......."
+            error={fieldErrors.password}
             required
             icon={
               <button
