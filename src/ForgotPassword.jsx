@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ArrowLeft, Loader2, KeyRound, CheckCircle2 } from 'lucide-react';
-import { InputField } from './InputField';
+import { InputField } from './Components/InputField';
 
 export default function ForgotPassword({ onBack, onVerificationSuccess }) {
   const [step, setStep] = useState('email');

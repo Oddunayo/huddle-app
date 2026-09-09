@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { InputField } from "./InputField";
+import { InputField } from "./Components/InputField";
 
-export default function AuthForm({ onBack, onSuccess, onLoginClick }) {
+export default function AuthForm({ onBack, onSuccess, onLoginClick,}) {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -167,7 +167,7 @@ export default function AuthForm({ onBack, onSuccess, onLoginClick }) {
           Already have an account?{" "}
           <button
             type="button"
-            onClick={onLoginClick || onBack}
+            onClick={onLoginClick || onBack }
             className="text-[#5C54E5] font-semibold hover:underline"
           >
             Sign in

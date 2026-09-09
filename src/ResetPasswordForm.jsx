@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
-import { InputField } from './InputField';
+import { InputField } from './Components/InputField';
 
 export default function ResetPasswordForm({ onResetSuccess }) {
   const [formData, setFormData] = useState({

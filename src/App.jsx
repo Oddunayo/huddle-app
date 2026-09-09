@@ -2,23 +2,39 @@ import { useState } from "react";
 import "./index.css";
 import AuthForm from "./AuthForm";
 import SuccessScreen from "./successScreen";
-import LoginForm from "./LoginForm"
+import LoginForm from "./LoginForm";
 import ForgotPassword from "./ForgotPassword";
 import ResetPasswordForm from "./ResetPasswordForm";
-import {MessageSquare} from "lucide-react"
-import Carousel from "./Carousel";
+import { MessageSquare } from "lucide-react";
+import Carousel from "./components/Carousel";
+import HomeScreen from "./screens/HomeScreen";
 
 function App() {
-  // Home page
   const [currentPage, setCurrentPage] = useState("home");
+  const [user, setUser] = useState(null);
+
+  const handleLoginSuccess = (userData) => {
+    setUser(userData || { fullName: "Jane Doe", initials: "JD", email: "jane@example.com" });
+    setCurrentPage("channels");
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    setCurrentPage("home");
+  };
+
+  // If logged in, display HomeScreen
+  if (currentPage === "channels") {
+    return <HomeScreen user={user} onLogout={handleLogout} />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
       {currentPage === "home" && (
         <div className="w-full max-w-md bg-white rounded-3xl p-6 shadow-sm text-center space-y-6">
           <div className="flex items-center justify-center gap-2">
-            <MessageSquare className="w-6 h-6 fill-[#5C54E5] text-[#5C54E5]"/>
-             <h1 className="text-xl font-black tracking-wider text-gray-900">HUDDLE</h1>
+            <MessageSquare className="w-6 h-6 fill-[#5C54E5] text-[#5C54E5]" />
+            <h1 className="text-xl font-black tracking-wider text-gray-900">HUDDLE</h1>
           </div>
 
           <Carousel />
@@ -27,7 +43,7 @@ function App() {
             <h2 className="text-2xl font-bold text-gray-900">Welcome to Huddle</h2>
             <p className="text-gray-500 text-sm">
               A simple way for teams to chat, collaborate, and get things done.
-             </p>
+            </p>
           </div>
 
           <div className="flex flex-col gap-3">
@@ -46,7 +62,7 @@ function App() {
           </div>
         </div>
       )}
-      {/* Placeholder for Authentication Forms */}
+
       {currentPage === "register" && (
         <AuthForm
           onBack={() => setCurrentPage("home")}
@@ -55,7 +71,7 @@ function App() {
         />
       )}
 
-        {currentPage === "success" && (
+      {currentPage === "success" && (
         <SuccessScreen onContinue={() => setCurrentPage("login")} />
       )}
 
@@ -64,7 +80,7 @@ function App() {
           onBack={() => setCurrentPage("home")}
           onRegisterClick={() => setCurrentPage("register")}
           onForgotPasswordClick={() => setCurrentPage("forgot-password")}
-          onLoginSuccess={() => setCurrentPage("channels")}
+          onLoginSuccess={handleLoginSuccess}
         />
       )}
 
