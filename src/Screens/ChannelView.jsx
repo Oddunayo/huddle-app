@@ -51,7 +51,7 @@ export default function ChannelView({ channel, onBack }) {
             className="rounded-full p-1 text-gray-600 hover:bg-gray-100"
             aria-label="Back to channels"
           >
-            ‹
+            ←
           </button>
           <div className="flex items-center gap-1 font-bold text-gray-900">
             <span className="text-gray-400">#</span>
