@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { InputField } from "./Components/InputField";
 
-export default function AuthForm({ onBack, onSuccess, onLoginClick,}) {
+export default function AuthForm({ onBack, onSuccess, onLoginClick }) {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -148,10 +148,11 @@ export default function AuthForm({ onBack, onSuccess, onLoginClick,}) {
         <button
           type="submit"
           disabled={!isFormValid || isLoading}
-          className={`w-full font-semibold py-3.5 px-4 rounded-full transition duration-200 mt-2 ${isFormValid && !isLoading
+          className={`w-full font-semibold py-3.5 px-4 rounded-full transition duration-200 mt-2 ${
+            isFormValid && !isLoading
               ? "bg-[#5C54E5] hover:bg-[#4B43D1] text-white cursor-pointer shadow-xs"
               : "bg-gray-200 text-gray-400 cursor-not-allowed"
-            }`}
+          }`}
         >
           {isLoading ? (
             <>
@@ -159,7 +160,7 @@ export default function AuthForm({ onBack, onSuccess, onLoginClick,}) {
               <span>Creating Account...</span>
             </>
           ) : (
-            'Create Account'
+            "Create Account"
           )}
         </button>
 
@@ -167,7 +168,7 @@ export default function AuthForm({ onBack, onSuccess, onLoginClick,}) {
           Already have an account?{" "}
           <button
             type="button"
-            onClick={onLoginClick || onBack }
+            onClick={onLoginClick || onBack}
             className="text-[#5C54E5] font-semibold hover:underline"
           >
             Sign in

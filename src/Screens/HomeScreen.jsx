@@ -1,18 +1,33 @@
-import { useState } from 'react';
-import ChannelView from './ChannelView';
-import DirectMessagesView from './DirectMessagesView';
-import ProfileView from './ProfileView';
-import CreateChannelModal from '../Components/CreateChannelModal';
+import { useState } from "react";
+import ChannelView from "./ChannelView";
+import DirectMessagesView from "./DirectMessagesView";
+import ProfileView from "./ProfileView";
+import CreateChannelModal from "../Components/CreateChannelModal";
 
 export default function HomeScreen({ user, onLogout }) {
-  const [activeTab, setActiveTab] = useState('channels'); // 'channels' | 'messages' | 'you'
+  const [activeTab, setActiveTab] = useState("channels"); // 'channels' | 'messages' | 'you'
   const [selectedChannel, setSelectedChannel] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [channels, setChannels] = useState([
-    { id: 'general', name: 'general', lastMessage: 'Welcome to the team! 🎉', unread: false },
-    { id: 'random', name: 'random', lastMessage: 'Anyone up for lunch?', unread: false },
-    { id: 'project-updates', name: 'project-updates', lastMessage: 'Sprint review at 3pm', unread: false },
+    {
+      id: "general",
+      name: "general",
+      lastMessage: "Welcome to the team! 🎉",
+      unread: false,
+    },
+    {
+      id: "random",
+      name: "random",
+      lastMessage: "Anyone up for lunch?",
+      unread: false,
+    },
+    {
+      id: "project-updates",
+      name: "project-updates",
+      lastMessage: "Sprint review at 3pm",
+      unread: false,
+    },
   ]);
 
   const handleCreateChannel = (newChannel) => {
@@ -50,14 +65,14 @@ export default function HomeScreen({ user, onLogout }) {
 
           {/* User Avatar Badge */}
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#0CC8D4] text-xs font-bold text-white">
-            {user?.initials || 'JD'}
+            {user?.initials || "JD"}
           </div>
         </div>
       </header>
 
       {/* Main View Area */}
       <main className="flex-1 overflow-y-auto">
-        {activeTab === 'channels' && (
+        {activeTab === "channels" && (
           <div className="p-4">
             <h2 className="mb-3 text-xs font-bold tracking-wider text-gray-500 uppercase">
               Channels
@@ -75,7 +90,9 @@ export default function HomeScreen({ user, onLogout }) {
                       <span className="text-gray-400">#</span>
                       <span>{ch.name}</span>
                     </div>
-                    <p className="mt-0.5 text-xs text-gray-500">{ch.lastMessage}</p>
+                    <p className="mt-0.5 text-xs text-gray-500">
+                      {ch.lastMessage}
+                    </p>
                   </div>
                   {ch.unread && (
                     <span className="h-2.5 w-2.5 rounded-full bg-[#0CC8D4]"></span>
@@ -86,17 +103,19 @@ export default function HomeScreen({ user, onLogout }) {
           </div>
         )}
 
-        {activeTab === 'messages' && <DirectMessagesView user={user} />}
+        {activeTab === "messages" && <DirectMessagesView user={user} />}
 
-        {activeTab === 'you' && <ProfileView user={user} onLogout={onLogout} />}
+        {activeTab === "you" && <ProfileView user={user} onLogout={onLogout} />}
       </main>
 
       {/* Bottom Navigation Bar */}
       <nav className="flex border-t border-gray-200 bg-white">
         <button
-          onClick={() => setActiveTab('channels')}
+          onClick={() => setActiveTab("channels")}
           className={`flex flex-1 flex-col items-center py-2.5 text-xs font-semibold ${
-            activeTab === 'channels' ? 'text-purple-600' : 'text-gray-400 hover:text-gray-600'
+            activeTab === "channels"
+              ? "text-purple-600"
+              : "text-gray-400 hover:text-gray-600"
           }`}
         >
           <span className="text-base mb-0.5">💬</span>
@@ -104,9 +123,11 @@ export default function HomeScreen({ user, onLogout }) {
         </button>
 
         <button
-          onClick={() => setActiveTab('messages')}
+          onClick={() => setActiveTab("messages")}
           className={`flex flex-1 flex-col items-center py-2.5 text-xs font-semibold ${
-            activeTab === 'messages' ? 'text-purple-600' : 'text-gray-400 hover:text-gray-600'
+            activeTab === "messages"
+              ? "text-purple-600"
+              : "text-gray-400 hover:text-gray-600"
           }`}
         >
           <span className="text-base mb-0.5">✉️</span>
@@ -114,9 +135,11 @@ export default function HomeScreen({ user, onLogout }) {
         </button>
 
         <button
-          onClick={() => setActiveTab('you')}
+          onClick={() => setActiveTab("you")}
           className={`flex flex-1 flex-col items-center py-2.5 text-xs font-semibold ${
-            activeTab === 'you' ? 'text-purple-600' : 'text-gray-400 hover:text-gray-600'
+            activeTab === "you"
+              ? "text-purple-600"
+              : "text-gray-400 hover:text-gray-600"
           }`}
         >
           <span className="text-base mb-0.5">👤</span>

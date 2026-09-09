@@ -27,18 +27,18 @@ function Carousel() {
           className="w-full h-full object-cover"
         />
 
-<div className="absolute inset-0 bg-linear-to-b from-black/20 via-transparent to-transparent p-4 flex flex-col justify-start text-left">
-  <div className="flex items-center gap-1.5 text-xs font-bold text-[#5C54E5] mb-2 bg-white px-2.5 py-1 rounded-full w-max shadow-md">
-    <MessageSquare className="h-3.5 w-3.5 fill-[#5C54E5] text-[#5C54E5]" />
-    <span>Huddle</span>
-  </div>
-  <h3 className="text-xl font-black text-white leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-    {slide.title}
-  </h3>
-  <p className="text-xs font-semibold text-gray-100 mt-1 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
-    {slide.caption}
-  </p>
-</div>
+        <div className="absolute inset-0 bg-linear-to-b from-black/20 via-transparent to-transparent p-4 flex flex-col justify-start text-left">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-[#5C54E5] mb-2 bg-white px-2.5 py-1 rounded-full w-max shadow-md">
+            <MessageSquare className="h-3.5 w-3.5 fill-[#5C54E5] text-[#5C54E5]" />
+            <span>Huddle</span>
+          </div>
+          <h3 className="text-xl font-black text-white leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+            {slide.title}
+          </h3>
+          <p className="text-xs font-semibold text-gray-100 mt-1 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
+            {slide.caption}
+          </p>
+        </div>
       </div>
 
       <div className="flex justify-center gap-1.5">

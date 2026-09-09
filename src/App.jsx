@@ -6,15 +6,21 @@ import LoginForm from "./LoginForm";
 import ForgotPassword from "./ForgotPassword";
 import ResetPasswordForm from "./ResetPasswordForm";
 import { MessageSquare } from "lucide-react";
-import Carousel from "./components/Carousel";
-import HomeScreen from "./screens/HomeScreen";
+import Carousel from "./Components/Carousel";
+import HomeScreen from "./Screens/HomeScreen";
 
 function App() {
   const [currentPage, setCurrentPage] = useState("home");
   const [user, setUser] = useState(null);
 
   const handleLoginSuccess = (userData) => {
-    setUser(userData || { fullName: "Jane Doe", initials: "JD", email: "jane@example.com" });
+    setUser(
+      userData || {
+        fullName: "Jane Doe",
+        initials: "JD",
+        email: "jane@example.com",
+      },
+    );
     setCurrentPage("channels");
   };
 
@@ -34,13 +40,17 @@ function App() {
         <div className="w-full max-w-md bg-white rounded-3xl p-6 shadow-sm text-center space-y-6">
           <div className="flex items-center justify-center gap-2">
             <MessageSquare className="w-6 h-6 fill-[#5C54E5] text-[#5C54E5]" />
-            <h1 className="text-xl font-black tracking-wider text-gray-900">HUDDLE</h1>
+            <h1 className="text-xl font-black tracking-wider text-gray-900">
+              HUDDLE
+            </h1>
           </div>
 
           <Carousel />
 
           <div className="space-y-1">
-            <h2 className="text-2xl font-bold text-gray-900">Welcome to Huddle</h2>
+            <h2 className="text-2xl font-bold text-gray-900">
+              Welcome to Huddle
+            </h2>
             <p className="text-gray-500 text-sm">
               A simple way for teams to chat, collaborate, and get things done.
             </p>
@@ -92,9 +102,7 @@ function App() {
       )}
 
       {currentPage === "reset-password" && (
-        <ResetPasswordForm
-          onResetSuccess={() => setCurrentPage("login")}
-        />
+        <ResetPasswordForm onResetSuccess={() => setCurrentPage("login")} />
       )}
     </div>
   );

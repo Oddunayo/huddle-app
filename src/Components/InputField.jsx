@@ -1,6 +1,6 @@
 export function InputField({
   label,
-  type = 'text',
+  type = "text",
   name,
   value,
   onChange,
@@ -9,7 +9,7 @@ export function InputField({
   disabled = false,
   icon,
   error, // <--- 1. Add error prop
-  className = '',
+  className = "",
   ...props
 }) {
   return (
@@ -30,9 +30,9 @@ export function InputField({
           disabled={disabled}
           className={`w-full rounded-xl border px-3.5 py-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition disabled:bg-gray-50 ${
             error
-              ? 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500 bg-red-50/20'
-              : 'border-gray-200 focus:border-[#5C54E5] focus:ring-1 focus:ring-[#5C54E5]'
-          } ${icon ? 'pr-10' : ''} ${className}`}
+              ? "border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500 bg-red-50/20"
+              : "border-gray-200 focus:border-[#5C54E5] focus:ring-1 focus:ring-[#5C54E5]"
+          } ${icon ? "pr-10" : ""} ${className}`}
           {...props}
         />
         {icon && (
@@ -43,9 +43,7 @@ export function InputField({
       </div>
 
       {error && (
-        <p className="text-xs text-red-500 font-medium mt-1">
-          {error}
-        </p>
+        <p className="text-xs text-red-500 font-medium mt-1">{error}</p>
       )}
     </div>
   );

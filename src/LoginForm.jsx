@@ -110,7 +110,7 @@ export default function LoginForm({
           <div className="flex justify-end mt-1.5">
             <button
               type="button"
-              onClick={ onForgotPasswordClick}
+              onClick={onForgotPasswordClick}
               className="text-xs text-[#5C54E5] font-semibold hover:underline cursor-pointer"
             >
               Forgot password?

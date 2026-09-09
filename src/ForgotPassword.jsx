@@ -1,11 +1,11 @@
-import { useState } from 'react';
-import { ArrowLeft, Loader2, KeyRound, CheckCircle2 } from 'lucide-react';
-import { InputField } from './Components/InputField';
+import { useState } from "react";
+import { ArrowLeft, Loader2, KeyRound, CheckCircle2 } from "lucide-react";
+import { InputField } from "./Components/InputField";
 
 export default function ForgotPassword({ onBack, onVerificationSuccess }) {
-  const [step, setStep] = useState('email');
-  const [email, setEmail] = useState('');
-  const [code, setCode] = useState('');
+  const [step, setStep] = useState("email");
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
   const [errorMessage, setErrorMessage] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -18,8 +18,8 @@ export default function ForgotPassword({ onBack, onVerificationSuccess }) {
 
     setTimeout(() => {
       setIsLoading(false);
-      setStep('verify');
-      setSuccessMessage('A reset code has been sent to your email.');
+      setStep("verify");
+      setSuccessMessage("A reset code has been sent to your email.");
     }, 1200);
   };
 
@@ -31,7 +31,7 @@ export default function ForgotPassword({ onBack, onVerificationSuccess }) {
 
     setTimeout(() => {
       setIsLoading(false);
-      setSuccessMessage('Code verified! Redirecting...');
+      setSuccessMessage("Code verified! Redirecting...");
       if (onVerificationSuccess) {
         onVerificationSuccess();
       }
@@ -53,7 +53,7 @@ export default function ForgotPassword({ onBack, onVerificationSuccess }) {
       <div className="space-y-1">
         <h2 className="text-2xl font-bold text-gray-900">Reset password</h2>
         <p className="text-gray-500 text-sm">
-          {step === 'email'
+          {step === "email"
             ? "Enter your email address and we'll send you a reset code."
             : `Enter the verification code sent to ${email}`}
         </p>
@@ -74,7 +74,7 @@ export default function ForgotPassword({ onBack, onVerificationSuccess }) {
       )}
 
       {/* Step 1: Request Email */}
-      {step === 'email' && (
+      {step === "email" && (
         <form onSubmit={handleRequestCode} className="space-y-4">
           <InputField
             label="Email"
@@ -93,8 +93,8 @@ export default function ForgotPassword({ onBack, onVerificationSuccess }) {
             disabled={!email.trim() || isLoading}
             className={`w-full font-semibold py-3.5 px-4 rounded-full transition duration-200 mt-2 flex items-center justify-center gap-2 ${
               email.trim() && !isLoading
-                ? 'bg-[#5C54E5] hover:bg-[#4B43D1] text-white cursor-pointer shadow-xs'
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                ? "bg-[#5C54E5] hover:bg-[#4B43D1] text-white cursor-pointer shadow-xs"
+                : "bg-gray-200 text-gray-400 cursor-not-allowed"
             }`}
           >
             {isLoading ? (
@@ -103,14 +103,14 @@ export default function ForgotPassword({ onBack, onVerificationSuccess }) {
                 <span>Sending Code...</span>
               </>
             ) : (
-              'Send reset code'
+              "Send reset code"
             )}
           </button>
         </form>
       )}
 
       {/* Step 2: Verify Code */}
-      {step === 'verify' && (
+      {step === "verify" && (
         <form onSubmit={handleVerifyCode} className="space-y-4">
           <InputField
             label="Verification Code"
@@ -129,8 +129,8 @@ export default function ForgotPassword({ onBack, onVerificationSuccess }) {
             disabled={!code.trim() || isLoading}
             className={`w-full font-semibold py-3.5 px-4 rounded-full transition duration-200 mt-2 flex items-center justify-center gap-2 ${
               code.trim() && !isLoading
-                ? 'bg-[#5C54E5] hover:bg-[#4B43D1] text-white cursor-pointer shadow-xs'
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                ? "bg-[#5C54E5] hover:bg-[#4B43D1] text-white cursor-pointer shadow-xs"
+                : "bg-gray-200 text-gray-400 cursor-not-allowed"
             }`}
           >
             {isLoading ? (
@@ -139,16 +139,16 @@ export default function ForgotPassword({ onBack, onVerificationSuccess }) {
                 <span>Verifying...</span>
               </>
             ) : (
-              'Verify Code'
+              "Verify Code"
             )}
           </button>
 
           <p className="text-center text-xs text-gray-500 pt-1">
-            Didn't receive a code?{' '}
+            Didn't receive a code?{" "}
             <button
               type="button"
               onClick={() => {
-                setStep('email');
+                setStep("email");
                 setSuccessMessage(null);
               }}
               className="text-[#5C54E5] font-semibold hover:underline cursor-pointer"

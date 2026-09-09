@@ -1,6 +1,6 @@
 export default function ProfileView({ user, onLogout }) {
-  const name = user?.fullName || 'Jane Doe';
-  const initials = user?.initials || 'JD';
+  const name = user?.fullName || "Jane Doe";
+  const initials = user?.initials || "JD";
 
   return (
     <div className="flex h-full flex-col bg-white">
