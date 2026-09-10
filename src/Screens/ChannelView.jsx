@@ -25,7 +25,7 @@ export default function ChannelView({ channel, user, onBack }) {
     const q = query(
       collection(db, "messages"),
       where("channelId", "==", channel.id),
-      orderBy("CreatedAt", "asc")
+      orderBy("timestamp", "asc")
     );
 
     // includeMetadataChanges ensures local writes show immediately without needing to re-enter
@@ -74,7 +74,6 @@ export default function ChannelView({ channel, user, onBack }) {
         senderName: user?.fullName || user?.displayName || "User",
         text: messageText,
         timestamp: serverTimestamp(),
-        createdAt: Date.now(),
         seen: false,
       });
     } catch (error) {
