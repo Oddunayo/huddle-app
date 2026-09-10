@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   collection,
   query,
@@ -10,10 +10,15 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase";
 
-export default function ChannelView({ channel, user,  onBack }) {
-  const [messages, setMessages] = useState([]);
+const EMOJIS = ["👍", "❤️", "😂", "🎉", "🔥", "🚀", "🙌", "✨"];
 
-  // Fetch real-time channel messages from Firestore
+export default function ChannelView({ channel, user, onBack }) {
+  const [messages, setMessages] = useState([]);
+  const [text, setText] = useState("");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const messagesEndRef = useRef(null);
+
+  // 1. Listen for real-time channel messages
   useEffect(() => {
     if (!channel?.id) return;
 
@@ -30,7 +35,7 @@ export default function ChannelView({ channel, user,  onBack }) {
           id: doc.id,
           ...data,
           isSelf: data.senderId === user?.uid,
-          timestamp: data.timestamp?.toDate
+          timeString: data.timestamp?.toDate
             ? data.timestamp.toDate().toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit",
@@ -44,7 +49,10 @@ export default function ChannelView({ channel, user,  onBack }) {
     return () => unsubscribe();
   }, [channel?.id, user?.uid]);
 
-  const [text, setText] = useState("");
+  // 2. Auto-scroll to bottom whenever new messages arrive
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const handleSend = async (e) => {
     e.preventDefault();
@@ -52,6 +60,7 @@ export default function ChannelView({ channel, user,  onBack }) {
 
     const messageText = text.trim();
     setText("");
+    setShowEmojiPicker(false);
 
     try {
       await addDoc(collection(db, "messages"), {
@@ -66,7 +75,7 @@ export default function ChannelView({ channel, user,  onBack }) {
       console.error("Error sending message:", error);
     }
   };
-  
+
   return (
     <div className="flex h-screen flex-col bg-white">
       {/* Header */}
@@ -74,7 +83,7 @@ export default function ChannelView({ channel, user,  onBack }) {
         <div className="flex items-center gap-3">
           <button
             onClick={onBack}
-            className="rounded-full p-1 text-gray-600 hover:bg-gray-100"
+            className="rounded-full p-1 text-gray-600 hover:bg-gray-100 cursor-pointer"
             aria-label="Back to channels"
           >
             ←
@@ -109,7 +118,7 @@ export default function ChannelView({ channel, user,  onBack }) {
                   {msg.senderName}
                 </span>
                 <span className="text-[10px] text-gray-400">
-                  {msg.timestamp}
+                  {msg.timeString}
                 </span>
               </div>
               <div
@@ -121,42 +130,59 @@ export default function ChannelView({ channel, user,  onBack }) {
               >
                 {msg.text}
               </div>
-              {msg.isSelf && (
-                <span className="mt-1 text-[10px] font-medium text-[#0CC8D4]">
-                  {msg.seen ? "✓✓ Seen" : "✓ Sent"}
-                </span>
-              )}
             </div>
           ))
         )}
+        <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Composer */}
-      <form
-        onSubmit={handleSend}
-        className="flex items-center gap-2 border-t border-gray-200 p-3 bg-white"
-      >
-        <button
-          type="button"
-          className="text-xl text-gray-500 hover:text-gray-700"
+      {/* Input Composer with Active Emoji Picker */}
+      <div className="relative">
+        {showEmojiPicker && (
+          <div className="absolute bottom-14 left-4 z-10 flex gap-1 rounded-2xl border border-gray-200 bg-white p-2 shadow-lg">
+            {EMOJIS.map((emoji) => (
+              <button
+                key={emoji}
+                type="button"
+                onClick={() => {
+                  setText((prev) => prev + emoji);
+                  setShowEmojiPicker(false);
+                }}
+                className="p-1.5 text-lg hover:bg-gray-100 rounded-lg cursor-pointer"
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <form
+          onSubmit={handleSend}
+          className="flex items-center gap-2 border-t border-gray-200 p-3 bg-white"
         >
-          😊
-        </button>
-        <input
-          type="text"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder={`Message #${channel?.name || "general"}`}
-          className="flex-1 rounded-full border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-        />
-        <button
-          type="submit"
-          disabled={!text.trim()}
-          className="rounded-full bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-700 disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          Send
-        </button>
-      </form>
+          <button
+            type="button"
+            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+            className="text-xl text-gray-500 hover:text-gray-700 cursor-pointer"
+          >
+            😊
+          </button>
+          <input
+            type="text"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder={`Message #${channel?.name || "general"}`}
+            className="flex-1 rounded-full border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+          />
+          <button
+            type="submit"
+            disabled={!text.trim()}
+            className="rounded-full bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-700 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+          >
+            Send
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
