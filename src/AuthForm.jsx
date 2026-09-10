@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { InputField } from "./Components/InputField";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import { auth, db } from "./firebase";
 
 export default function AuthForm({ onBack, onSuccess, onLoginClick }) {
   const [formData, setFormData] = useState({
@@ -31,7 +34,7 @@ export default function AuthForm({ onBack, onSuccess, onLoginClick }) {
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage(null);
 
@@ -43,12 +46,31 @@ export default function AuthForm({ onBack, onSuccess, onLoginClick }) {
 
     setIsLoading(true);
 
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      // 1. Create user in Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password
+      );
+
+      // 2. Save user profile document in Firestore
+      await setDoc(doc(db, "users", userCredential.user.uid), {
+        uid: userCredential.user.uid,
+        fullName: formData.name,
+        email: formData.email,
+        status: "Online",
+        createdAt: new Date().toISOString()
+      });
+
       if (onSuccess) {
-        onSuccess();
+        onSuccess(userCredential.user);
       }
-    }, 2000);
+    } catch (error) {
+      setErrorMessage(error.message.replace("Firebase: ", ""));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

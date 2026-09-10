@@ -1,6 +1,27 @@
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase";
+
+
 export default function ProfileView({ user, onLogout }) {
-  const name = user?.fullName || "Jane Doe";
-  const initials = user?.initials || "JD";
+  const name = user?.fullName || user?.displayName || "User";
+  const initials =
+    user?.initials ||
+    (name !== "User"
+      ? name
+          .split(" ")
+          .map((n) => n[0])
+          .join("")
+          .toUpperCase()
+      : "U");
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      if (onLogout) onLogout();
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   return (
     <div className="flex h-full flex-col bg-white">
@@ -30,9 +51,10 @@ export default function ProfileView({ user, onLogout }) {
         </div>
 
         {/* Log Out Button */}
+       {/* Log Out Button */}
         <button
-          onClick={onLogout}
-          className="mt-8 rounded-lg border border-gray-300 px-6 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+          onClick={handleLogout}
+          className="mt-8 rounded-lg border border-gray-300 px-6 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer"
         >
           Log out
         </button>

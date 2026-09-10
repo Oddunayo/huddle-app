@@ -1,49 +1,72 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
+  addDoc,
+  serverTimestamp,
+} from "firebase/firestore";
+import { db } from "../firebase";
 
-export default function ChannelView({ channel, onBack }) {
-  const [messages, setMessages] = useState([
-    {
-      id: "1",
-      senderName: "Alex",
-      senderAvatar: "AJ",
-      text: "Welcome to the team! 🎉",
-      timestamp: "10:20 AM",
-      isSelf: false,
-    },
-    {
-      id: "2",
-      senderName: "Jane",
-      senderAvatar: "JD",
-      text: "Thank you! Excited to be here.",
-      timestamp: "10:24 AM",
-      isSelf: true,
-      seen: true,
-    },
-  ]);
+export default function ChannelView({ channel, user,  onBack }) {
+  const [messages, setMessages] = useState([]);
+
+  // Fetch real-time channel messages from Firestore
+  useEffect(() => {
+    if (!channel?.id) return;
+
+    const q = query(
+      collection(db, "messages"),
+      where("channelId", "==", channel.id),
+      orderBy("timestamp", "asc")
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const fetchedMessages = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          isSelf: data.senderId === user?.uid,
+          timestamp: data.timestamp?.toDate
+            ? data.timestamp.toDate().toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "Just now",
+        };
+      });
+      setMessages(fetchedMessages);
+    });
+
+    return () => unsubscribe();
+  }, [channel?.id, user?.uid]);
 
   const [text, setText] = useState("");
 
-  const handleSend = (e) => {
+  const handleSend = async (e) => {
     e.preventDefault();
     if (!text.trim()) return;
 
-    const newMessage = {
-      id: Date.now().toString(),
-      senderName: "Jane",
-      senderAvatar: "JD",
-      text: text.trim(),
-      timestamp: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      isSelf: true,
-      seen: false,
-    };
-
-    setMessages([...messages, newMessage]);
+    const messageText = text.trim();
     setText("");
-  };
 
+    try {
+      await addDoc(collection(db, "messages"), {
+        channelId: channel.id,
+        senderId: user?.uid || "anonymous",
+        senderName: user?.fullName || user?.displayName || "User",
+        text: messageText,
+        timestamp: serverTimestamp(),
+        seen: false,
+      });
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
+  };
+  
   return (
     <div className="flex h-screen flex-col bg-white">
       {/* Header */}

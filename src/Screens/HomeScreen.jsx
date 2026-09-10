@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { collection, onSnapshot, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "../firebase";
 import ChannelView from "./ChannelView";
 import DirectMessagesView from "./DirectMessagesView";
 import ProfileView from "./ProfileView";
@@ -9,36 +11,39 @@ export default function HomeScreen({ user, onLogout }) {
   const [selectedChannel, setSelectedChannel] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const [channels, setChannels] = useState([
-    {
-      id: "general",
-      name: "general",
-      lastMessage: "Welcome to the team! 🎉",
-      unread: false,
-    },
-    {
-      id: "random",
-      name: "random",
-      lastMessage: "Anyone up for lunch?",
-      unread: false,
-    },
-    {
-      id: "project-updates",
-      name: "project-updates",
-      lastMessage: "Sprint review at 3pm",
-      unread: false,
-    },
-  ]);
+ const [channels, setChannels] = useState([]);
 
-  const handleCreateChannel = (newChannel) => {
-    setChannels((prev) => [...prev, newChannel]);
+  // Listen to channels in real time from Firestore
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, "channels"), (snapshot) => {
+      const channelList = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setChannels(channelList);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const handleCreateChannel = async (newChannel) => {
+    try {
+      await addDoc(collection(db, "channels"), {
+        name: newChannel.name,
+        description: newChannel.description || "",
+        lastMessage: "Channel created",
+        createdAt: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error("Error creating channel:", error);
+    }
   };
 
-  // If a channel is actively selected, show ChannelView full screen
   if (selectedChannel) {
     return (
       <ChannelView
         channel={selectedChannel}
+        user={user}
         onBack={() => setSelectedChannel(null)}
       />
     );

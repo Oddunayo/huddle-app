@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { InputField } from "./Components/InputField";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "./firebase";
 
 export default function LoginForm({
   onRegisterClick,
@@ -28,7 +30,7 @@ export default function LoginForm({
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isFormValid || isLoading) return;
 
@@ -36,21 +38,32 @@ export default function LoginForm({
     setFieldErrors({ email: "", password: "" });
     setIsLoading(true);
 
-    setTimeout(() => {
-      setIsLoading(false);
-
-      /* if (formData.email !== "user@team.com") {
-        setFieldErrors({
-          email: "Invalid email address or account not found.",
-          password: "Incorrect password. Please try again.",
-        });
-        return;
-      } */
+    try {
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password
+      );
 
       if (onLoginSuccess) {
-        onLoginSuccess();
+        onLoginSuccess(userCredential.user);
       }
-    }, 1500);
+    } catch (error) {
+      if (
+        error.code === "auth/user-not-found" ||
+        error.code === "auth/wrong-password" ||
+        error.code === "auth/invalid-credential"
+      ) {
+        setFieldErrors({
+          email: "Invalid email address or password.",
+          password: "Please check your details and try again.",
+        });
+      } else {
+        setErrorMessage(error.message.replace("Firebase: ", ""));
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
