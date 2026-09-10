@@ -49,6 +49,11 @@ export default function HomeScreen({ user, onLogout }) {
     );
   }
 
+  const handleShareApp = () => {
+    navigator.clipboard.writeText(window.location.href);
+    alert("Vercel app link copied to clipboard! Send it to your teammates.");
+  };
+
   return (
     <div className="flex h-screen flex-col bg-white">
       {/* Top Header Bar */}
@@ -56,7 +61,16 @@ export default function HomeScreen({ user, onLogout }) {
         <div className="flex items-center gap-2">
           <span className="text-xl">💬</span>
           <span className="text-lg font-bold text-gray-900">Huddle</span>
+
+           <button
+            onClick={handleShareApp}
+            className="rounded-full bg-purple-50 px-3 py-1.5 text-xs font-semibold text-purple-600 hover:bg-purple-100 cursor-pointer"
+          >
+            🔗 Share Link
+          </button>
         </div>
+
+       
 
         <div className="flex items-center gap-3">
           {/* Create Channel '+' Icon */}
