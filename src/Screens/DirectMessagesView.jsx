@@ -114,7 +114,7 @@ export default function DirectMessagesView({ user }) {
                   <p className="font-bold text-gray-900 text-sm">
                     {conv.recipientName || "Teammate"}
                   </p>
-                  <p className="text-xs text-gray-500 truncate max-w-[200px]">
+                  <p className="text-xs text-gray-500 truncate max-w-50">
                     {conv.lastMessage || "No messages yet"}
                   </p>
                 </div>
