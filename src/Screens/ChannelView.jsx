@@ -18,7 +18,7 @@ export default function ChannelView({ channel, user, onBack }) {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const messagesEndRef = useRef(null);
 
-  // 1. Listen for real-time channel messages
+  // 1. Listen for real-time channel messages 
   useEffect(() => {
     if (!channel?.id) return;
 
@@ -28,23 +28,28 @@ export default function ChannelView({ channel, user, onBack }) {
       orderBy("timestamp", "asc")
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const fetchedMessages = snapshot.docs.map((doc) => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          ...data,
-          isSelf: data.senderId === user?.uid,
-          timeString: data.timestamp?.toDate
-            ? data.timestamp.toDate().toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })
-            : "Just now",
-        };
-      });
-      setMessages(fetchedMessages);
-    });
+    // includeMetadataChanges ensures local writes show immediately without needing to re-enter
+    const unsubscribe = onSnapshot(
+      q,
+      { includeMetadataChanges: true },
+      (snapshot) => {
+        const fetchedMessages = snapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            ...data,
+            isSelf: data.senderId === user?.uid,
+            timeString: data.timestamp?.toDate
+              ? data.timestamp.toDate().toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : "Just now",
+          };
+        });
+        setMessages(fetchedMessages);
+      }
+    );
 
     return () => unsubscribe();
   }, [channel?.id, user?.uid]);
