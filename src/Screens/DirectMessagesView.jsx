@@ -7,6 +7,8 @@ import {
   onSnapshot,
   getDocs,
   addDoc,
+  doc,
+  setDoc,
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "../firebase";
@@ -21,6 +23,7 @@ export default function DirectMessagesView({ user }) {
   const [allUsers, setAllUsers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [isPartnerTyping, setIsPartnerTyping] = useState(false);
   const messagesEndRef = useRef(null);
 
   // 1. Fetch conversations where current user is a participant
@@ -43,9 +46,21 @@ export default function DirectMessagesView({ user }) {
     return () => unsubscribe();
   }, [user?.uid]);
 
-  // 2. Fetch messages for the currently selected conversation
+  // 2. Fetch messages & mark conversation as read
   useEffect(() => {
-    if (!selectedConv?.id) return;
+    if (!selectedConv?.id || !user?.uid) return;
+
+    // Mark DM conversation as read for current user
+    const markAsRead = async () => {
+      try {
+        const readRef = doc(db, "directMessages", selectedConv.id, "reads", user.uid);
+        await setDoc(readRef, { lastReadAt: serverTimestamp() }, { merge: true });
+      } catch (error) {
+        console.error("Error updating DM read status:", error);
+      }
+    };
+
+    markAsRead();
 
     const q = query(
       collection(db, "directMessages", selectedConv.id, "messages"),
@@ -73,12 +88,27 @@ export default function DirectMessagesView({ user }) {
     return () => unsubscribe();
   }, [selectedConv?.id, user?.uid]);
 
-  // 3. Auto-scroll to bottom on new messages
+  // 3. Listen for active typing state from recipient
+  useEffect(() => {
+    if (!selectedConv?.id || !user?.uid) return;
+
+    const typingRef = collection(db, "directMessages", selectedConv.id, "typing");
+    const unsubscribe = onSnapshot(typingRef, (snapshot) => {
+      const partnerTyping = snapshot.docs.some(
+        (doc) => doc.id !== user?.uid && doc.data()?.isTyping
+      );
+      setIsPartnerTyping(partnerTyping);
+    });
+
+    return () => unsubscribe();
+  }, [selectedConv?.id, user?.uid]);
+
+  // 4. Auto-scroll to bottom on new messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // 4. Fetch teammates for new chat modal
+  // 5. Fetch teammates for new chat modal
   const handleOpenUserList = async () => {
     setIsModalOpen(true);
     try {
@@ -106,7 +136,10 @@ export default function DirectMessagesView({ user }) {
     try {
       const docRef = await addDoc(collection(db, "directMessages"), {
         participants: [user.uid, selectedUser.uid],
-        recipientName: selectedUser.fullName || selectedUser.email,
+        participantNames: {
+          [user.uid]: user.fullName || user.displayName || "Teammate",
+          [selectedUser.uid]: selectedUser.fullName || selectedUser.email || "Teammate",
+        },
         lastMessage: "Started a conversation",
         updatedAt: serverTimestamp(),
       });
@@ -114,7 +147,10 @@ export default function DirectMessagesView({ user }) {
       setSelectedConv({
         id: docRef.id,
         participants: [user.uid, selectedUser.uid],
-        recipientName: selectedUser.fullName || selectedUser.email,
+        participantNames: {
+          [user.uid]: user.fullName || user.displayName || "Teammate",
+          [selectedUser.uid]: selectedUser.fullName || selectedUser.email || "Teammate",
+        },
       });
     } catch (error) {
       console.error("Error starting chat:", error);
@@ -128,6 +164,12 @@ export default function DirectMessagesView({ user }) {
     const messageText = text.trim();
     setText("");
     setShowEmojiPicker(false);
+
+    // Reset typing state immediately on send
+    if (user?.uid) {
+      const userTypingRef = doc(db, "directMessages", selectedConv.id, "typing", user.uid);
+      await setDoc(userTypingRef, { isTyping: false }, { merge: true });
+    }
 
     try {
       await addDoc(
@@ -147,8 +189,8 @@ export default function DirectMessagesView({ user }) {
   // If a conversation is actively open, render DM Message View
   if (selectedConv) {
     return (
-      <div className="flex h-screen flex-col bg-white">
-        <header className="flex items-center gap-3 border-b border-gray-200 px-4 py-3">
+      <div className="flex h-dvh flex-col bg-white overflow-hidden">
+        <header className="flex items-center gap-3 border-b border-gray-200 bg-white px-4 py-3 shrink-0 z-40">
           <button
             onClick={() => setSelectedConv(null)}
             className="rounded-full p-1 text-gray-600 hover:bg-gray-100 cursor-pointer"
@@ -156,7 +198,9 @@ export default function DirectMessagesView({ user }) {
             ←
           </button>
           <h1 className="font-bold text-gray-900">
-            {selectedConv.recipientName || "Teammate"}
+            {selectedConv.participantNames
+              ? Object.entries(selectedConv.participantNames).find(([uid]) => uid !== user?.uid)?.[1] || "Teammate"
+              : selectedConv.recipientName || "Teammate"}
           </h1>
         </header>
 
@@ -194,8 +238,15 @@ export default function DirectMessagesView({ user }) {
           <div ref={messagesEndRef} />
         </div>
 
+        {/* Typing Indicator */}
+        {isPartnerTyping && (
+          <p className="px-4 py-1 text-xs text-purple-600 italic animate-pulse bg-purple-50 shrink-0">
+            Teammate is typing...
+          </p>
+        )}
+
         {/* Composer */}
-        <div className="relative">
+        <div className="relative shrink-0 border-t border-gray-200 bg-white">
           {showEmojiPicker && (
             <div className="absolute bottom-14 left-4 z-10 flex gap-1 rounded-2xl border border-gray-200 bg-white p-2 shadow-lg">
               {EMOJIS.map((emoji) => (
@@ -228,7 +279,17 @@ export default function DirectMessagesView({ user }) {
             <input
               type="text"
               value={text}
-              onChange={(e) => setText(e.target.value)}
+              onChange={async (e) => {
+                const val = e.target.value;
+                setText(val);
+                if (!selectedConv?.id || !user?.uid) return;
+                try {
+                  const userTypingRef = doc(db, "directMessages", selectedConv.id, "typing", user.uid);
+                  await setDoc(userTypingRef, { isTyping: val.trim().length > 0 }, { merge: true });
+                } catch (err) {
+                  console.error("Error updating typing state:", err);
+                }
+              }}
               placeholder="Send a direct message..."
               className="flex-1 rounded-full border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
@@ -282,8 +343,15 @@ export default function DirectMessagesView({ user }) {
               >
                 <div>
                   <p className="font-bold text-gray-900 text-sm">
-                    {conv.recipientName || "Teammate"}
+                    {conv.participantNames
+                      ? Object.entries(conv.participantNames).find(([uid]) => uid !== user?.uid)?.[1] || "Teammate"
+                      : conv.recipientName || "Teammate"}
                   </p>
+                  {conv.unreadCount > 0 && (
+                    <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-purple-600 px-1.5 text-[10px] font-bold text-white">
+                      {conv.unreadCount > 9 ? "9+" : conv.unreadCount}
+                    </span>
+                  )}
                   <p className="text-xs text-gray-500 truncate max-w-50">
                     {conv.lastMessage || "Click to chat"}
                   </p>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { InputField } from "./Components/InputField";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "./firebase";
 
@@ -54,6 +54,10 @@ export default function AuthForm({ onBack, onSuccess, onLoginClick }) {
         formData.password
       );
 
+      await updateProfile(userCredential.user, {
+        displayName: formData.name
+      });
+
       // 2. Save user profile document in Firestore
       await setDoc(doc(db, "users", userCredential.user.uid), {
         uid: userCredential.user.uid,
@@ -63,8 +67,18 @@ export default function AuthForm({ onBack, onSuccess, onLoginClick }) {
         createdAt: new Date().toISOString()
       });
 
+      const nameToUse = formData.name || "";
+      const nameParts = nameToUse.trim().split(" ");
+      const userInitials = nameParts.length > 1
+      ? `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`.toUpperCase()
+      : nameToUse.substring(0, 2). toUpperCase();
+
       if (onSuccess) {
-        onSuccess(userCredential.user);
+        onSuccess({...userCredential.user,
+          displayName: formData.name,
+          fullName: formData.name,
+          initials: userInitials,
+      });
       }
     } catch (error) {
       setErrorMessage(error.message.replace("Firebase: ", ""));

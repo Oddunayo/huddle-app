@@ -55,7 +55,7 @@ export default function HomeScreen({ user, onLogout }) {
   };
 
   return (
-    <div className="flex h-screen flex-col bg-white">
+    <div className="flex h-dvh flex-col bg-white overflow-hidden">
       {/* Top Header Bar */}
       <header className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
         <div className="flex items-center gap-2">
@@ -90,7 +90,7 @@ export default function HomeScreen({ user, onLogout }) {
       </header>
 
       {/* Main View Area */}
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto pb-16">
         {activeTab === "channels" && (
           <div className="p-4">
             <h2 className="mb-3 text-xs font-bold tracking-wider text-gray-500 uppercase">
@@ -128,7 +128,7 @@ export default function HomeScreen({ user, onLogout }) {
       </main>
 
       {/* Bottom Navigation Bar */}
-      <nav className="flex border-t border-gray-200 bg-white">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 flex border-t border-gray-200 bg-white">
         <button
           onClick={() => setActiveTab("channels")}
           className={`flex flex-1 flex-col items-center py-2.5 text-xs font-semibold ${
