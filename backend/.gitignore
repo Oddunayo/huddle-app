@@ -6,4 +6,4 @@ dist/
 *firebase-adminsdk*.json
 *.log
 npm-debug.log*
-.DS_Store
+.DS_Store*.tsbuildinfo
