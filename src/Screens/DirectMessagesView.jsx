@@ -163,7 +163,7 @@ export default function DirectMessagesView({ user }) {
   // Active DM View
   if (selectedConv) {
     return (
-      <div className="flex h-dvh flex-col bg-white overflow-hidden">
+      <div className="flex h-dvh min-h-0 flex-col bg-white overflow-hidden">
         <header className="flex items-center gap-3 border-b border-gray-200 bg-white px-4 py-3 shrink-0 z-40">
           <button
             onClick={() => setSelectedConv(null)}
@@ -178,7 +178,7 @@ export default function DirectMessagesView({ user }) {
           </h1>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center py-10 text-gray-400">
               <p className="text-sm">This is the start of your direct message history.</p>
@@ -265,7 +265,7 @@ export default function DirectMessagesView({ user }) {
 
   // Conversation List View
   return (
-    <div className="flex h-full flex-col bg-white">
+    <div className="flex h-dvh min-h-0 flex-col bg-white overflow-hidden">
       <header className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
         <h1 className="text-lg font-bold text-gray-900">Direct messages</h1>
         <button
@@ -276,7 +276,7 @@ export default function DirectMessagesView({ user }) {
         </button>
       </header>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 min-h-0 overflow-y-auto">
         {conversations.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full px-6 text-center py-20">
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-purple-50 text-2xl text-purple-600">
