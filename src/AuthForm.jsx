@@ -74,7 +74,9 @@ export default function AuthForm({ onBack, onSuccess, onLoginClick }) {
       : nameToUse.substring(0, 2). toUpperCase();
 
       if (onSuccess) {
-        onSuccess({...userCredential.user,
+        onSuccess({
+          uid: userCredential.user.uid,
+          email: userCredential.user.email,
           displayName: formData.name,
           fullName: formData.name,
           initials: userInitials,
