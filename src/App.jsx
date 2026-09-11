@@ -131,12 +131,15 @@ function App() {
       )}
 
       {currentPage === "register" && (
-        <AuthForm
-          onBack={() => setCurrentPage("home")}
-          onSuccess={() => setCurrentPage("success")}
-          onLoginClick={() => setCurrentPage("login")}
-        />
-      )}
+  <AuthForm
+    onBack={() => setCurrentPage("home")}
+    onSuccess={(userData) => {
+      handleLoginSuccess(userData);
+      setCurrentPage("success");
+    }}
+    onLoginClick={() => setCurrentPage("login")}
+  />
+)}
 
       {currentPage === "success" && (
         <SuccessScreen onContinue={() => setCurrentPage("login")} />
