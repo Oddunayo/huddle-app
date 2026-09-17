@@ -163,7 +163,7 @@ export default function DirectMessagesView({ user }) {
   // Active DM View
   if (selectedConv) {
     return (
-      <div className="flex h-dvh min-h-0 flex-col bg-white overflow-hidden">
+      <div className="flex h-dvh w-full min-h-0 flex-col bg-white overflow-hidden">
         <header className="flex items-center gap-3 border-b border-gray-200 bg-white px-4 py-3 shrink-0 z-40">
           <button
             onClick={() => setSelectedConv(null)}
@@ -178,7 +178,7 @@ export default function DirectMessagesView({ user }) {
           </h1>
         </header>
 
-        <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 w-full  min-h-0 overflow-y-auto p-4 space-y-4">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center py-10 text-gray-400">
               <p className="text-sm">This is the start of your direct message history.</p>
@@ -217,7 +217,7 @@ export default function DirectMessagesView({ user }) {
         </div>
 
         {/* Composer */}
-        <div className="relative shrink-0 border-t border-gray-200 bg-white">
+        <div className="relative shrink-0 border-t border-gray-200 bg-white z-40">
           {showEmojiPicker && (
             <div className="absolute bottom-14 left-4 z-10 flex gap-1 rounded-2xl border border-gray-200 bg-white p-2 shadow-lg">
               {EMOJIS.map((emoji) => (
