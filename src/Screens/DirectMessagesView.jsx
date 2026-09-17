@@ -25,7 +25,7 @@ export default function DirectMessagesView({ user }) {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const messagesEndRef = useRef(null);
 
-  // 1. Fetch conversations where current user is a participant
+  // 1. Fetch conversations
   useEffect(() => {
     if (!user?.uid) return;
 
@@ -45,7 +45,7 @@ export default function DirectMessagesView({ user }) {
     return () => unsubscribe();
   }, [user?.uid]);
 
-  // 2. Fetch messages for selected conversation
+  // 2. Fetch messages & mark read
   useEffect(() => {
     if (!selectedConv?.id || !user?.uid) return;
 
@@ -70,6 +70,7 @@ export default function DirectMessagesView({ user }) {
         };
       });
       setMessages(fetched);
+      localStorage.setItem(`lastRead_dm_${user?.uid}_${selectedConv.id}`, String(new Date().getTime()));
     });
 
     return () => unsubscribe();
@@ -80,7 +81,22 @@ export default function DirectMessagesView({ user }) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // 4. Fetch teammates for new chat modal
+  // Check if unread
+  const isConvUnread = (conv) => {
+    if (selectedConv?.id === conv.id) return false;
+    const lastRead = localStorage.getItem(`lastRead_dm_${user?.uid}_${conv.id}`);
+    if (!lastRead) return true;
+
+    const convTime = conv.updatedAt?.toDate ? conv.updatedAt.toDate().getTime() : 0;
+    return convTime > parseInt(lastRead, 10);
+  };
+
+  const handleSelectConversation = (conv) => {
+    setSelectedConv(conv);
+    localStorage.setItem(`lastRead_dm_${user?.uid}_${conv.id}`, String(new Date().getTime()));
+  };
+
+  // 4. Fetch teammates modal
   const handleOpenUserList = async () => {
     setIsModalOpen(true);
     try {
@@ -101,7 +117,7 @@ export default function DirectMessagesView({ user }) {
     );
 
     if (existing) {
-      setSelectedConv(existing);
+      handleSelectConversation(existing);
       return;
     }
 
@@ -116,14 +132,16 @@ export default function DirectMessagesView({ user }) {
         updatedAt: serverTimestamp(),
       });
 
-      setSelectedConv({
+      const newConv = {
         id: docRef.id,
         participants: [user.uid, selectedUser.uid],
         participantNames: {
           [user.uid]: user.fullName || user.displayName || "Teammate",
           [selectedUser.uid]: selectedUser.fullName || selectedUser.email || "Teammate",
         },
-      });
+      };
+
+      handleSelectConversation(newConv);
     } catch (error) {
       console.error("Error starting chat:", error);
     }
@@ -138,7 +156,6 @@ export default function DirectMessagesView({ user }) {
     setShowEmojiPicker(false);
 
     try {
-      // Add message to subcollection
       await addDoc(
         collection(db, "directMessages", selectedConv.id, "messages"),
         {
@@ -149,12 +166,13 @@ export default function DirectMessagesView({ user }) {
         }
       );
 
-      // Update last message preview on parent conversation doc
       const convRef = doc(db, "directMessages", selectedConv.id);
       await updateDoc(convRef, {
         lastMessage: messageText,
         updatedAt: serverTimestamp(),
       });
+
+      localStorage.setItem(`lastRead_dm_${user?.uid}_${selectedConv.id}`, String(new Date().getTime()));
     } catch (error) {
       console.error("Error sending DM:", error);
     }
@@ -163,7 +181,7 @@ export default function DirectMessagesView({ user }) {
   // Active DM View
   if (selectedConv) {
     return (
-      <div className="flex h-dvh w-full min-h-0 flex-col bg-white overflow-hidden">
+      <div className="flex h-dvh max-h-dvh w-full min-h-0 flex-col bg-white overflow-hidden relative">
         <header className="flex items-center gap-3 border-b border-gray-200 bg-white px-4 py-3 shrink-0 z-40">
           <button
             onClick={() => setSelectedConv(null)}
@@ -178,7 +196,7 @@ export default function DirectMessagesView({ user }) {
           </h1>
         </header>
 
-        <div className="flex-1 w-full  min-h-0 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 w-full min-h-0 overflow-y-auto p-4 space-y-4">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center py-10 text-gray-400">
               <p className="text-sm">This is the start of your direct message history.</p>
@@ -192,10 +210,10 @@ export default function DirectMessagesView({ user }) {
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-xs font-semibold text-gray-700">
                     {msg.isSelf
-    ? (user?.fullName || user?.displayName || "You")
-    : (selectedConv.participantNames
-        ? Object.entries(selectedConv.participantNames).find(([uid]) => uid !== user?.uid)?.[1]
-        : msg.senderName) || "Teammate"}
+                      ? user?.fullName || user?.displayName || "You"
+                      : (selectedConv.participantNames
+                          ? Object.entries(selectedConv.participantNames).find(([uid]) => uid !== user?.uid)?.[1]
+                          : msg.senderName) || "Teammate"}
                   </span>
                   <span className="text-[10px] text-gray-400">
                     {msg.timeString}
@@ -216,7 +234,6 @@ export default function DirectMessagesView({ user }) {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Composer */}
         <div className="relative shrink-0 border-t border-gray-200 bg-white z-40">
           {showEmojiPicker && (
             <div className="absolute bottom-14 left-4 z-10 flex gap-1 rounded-2xl border border-gray-200 bg-white p-2 shadow-lg">
@@ -238,7 +255,7 @@ export default function DirectMessagesView({ user }) {
 
           <form
             onSubmit={handleSend}
-            className="flex items-center gap-2 border-t border-gray-200 p-3 bg-white"
+            className="flex items-center gap-2 p-3 bg-white"
           >
             <button
               type="button"
@@ -269,8 +286,8 @@ export default function DirectMessagesView({ user }) {
 
   // Conversation List View
   return (
-    <div className="flex h-dvh min-h-0 flex-col bg-white overflow-hidden">
-      <header className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
+    <div className="flex h-dvh max-h-dvh min-h-0 flex-col bg-white overflow-hidden">
+      <header className="flex items-center justify-between border-b border-gray-200 px-4 py-3 shrink-0">
         <h1 className="text-lg font-bold text-gray-900">Direct messages</h1>
         <button
           onClick={handleOpenUserList}
@@ -296,24 +313,31 @@ export default function DirectMessagesView({ user }) {
           </div>
         ) : (
           <div className="p-4 space-y-1">
-            {conversations.map((conv) => (
-              <div
-                key={conv.id}
-                onClick={() => setSelectedConv(conv)}
-                className="flex items-center justify-between rounded-xl p-3 hover:bg-gray-50 cursor-pointer"
-              >
-                <div>
-                  <p className="font-bold text-gray-900 text-sm">
-                    {conv.participantNames
-                      ? Object.entries(conv.participantNames).find(([uid]) => uid !== user?.uid)?.[1] || "Teammate"
-                      : conv.recipientName || "Teammate"}
-                  </p>
-                  <p className="text-xs text-gray-500 truncate max-w-50">
-                    {conv.lastMessage || "Click to chat"}
-                  </p>
+            {conversations.map((conv) => {
+              const hasUnread = isConvUnread(conv);
+              return (
+                <div
+                  key={conv.id}
+                  onClick={() => handleSelectConversation(conv)}
+                  className="flex items-center justify-between rounded-xl p-3 hover:bg-gray-50 cursor-pointer"
+                >
+                  <div>
+                    <p className={`text-sm ${hasUnread ? "font-black text-gray-900" : "font-semibold text-gray-800"}`}>
+                      {conv.participantNames
+                        ? Object.entries(conv.participantNames).find(([uid]) => uid !== user?.uid)?.[1] || "Teammate"
+                        : conv.recipientName || "Teammate"}
+                    </p>
+                    <p className={`text-xs truncate max-w-50 ${hasUnread ? "font-bold text-purple-700" : "text-gray-500"}`}>
+                      {conv.lastMessage || "Click to chat"}
+                    </p>
+                  </div>
+
+                  {hasUnread && (
+                    <span className="h-2.5 w-2.5 rounded-full bg-purple-600 shrink-0" />
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
