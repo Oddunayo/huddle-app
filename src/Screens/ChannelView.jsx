@@ -170,6 +170,21 @@ export default function ChannelView({ channel, user, onBack }) {
     setText("");
     setShowEmojiPicker(false);
 
+    // Optimistic UI update
+    const tempId = `temp_${Date.now()}`;
+    const optimisticMsg = {
+      id: tempId,
+      channelId: channel.id,
+      senderId: user?.uid || "anonymous",
+      senderName: user?.fullName || user?.displayName || "You",
+      text: messageText,
+      reactions: {},
+      isSelf: true,
+      timeString: "Just now",
+    };
+
+    setMessages((prev) => [...prev, optimisticMsg]);
+
     try {
       await addDoc(collection(db, "messages"), {
         channelId: channel.id,
@@ -189,6 +204,8 @@ export default function ChannelView({ channel, user, onBack }) {
       markChannelAsRead();
     } catch (error) {
       console.error("Error sending message:", error);
+      // Revert optimistic update if write fails
+      setMessages((prev) => prev.filter((m) => m.id !== tempId));
     }
   };
 
@@ -351,7 +368,7 @@ export default function ChannelView({ channel, user, onBack }) {
             type="text"
             value={text}
             onChange={handleTyping}
-            placeholder={`Message #${channel?.name || "general"}`}
+            placeholder={"Message #" + (channel?.name || "general")}
             className="flex-1 rounded-full border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
           <button
@@ -366,3 +383,4 @@ export default function ChannelView({ channel, user, onBack }) {
     </div>
   );
 }
+
