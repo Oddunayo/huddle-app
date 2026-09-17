@@ -191,7 +191,11 @@ export default function DirectMessagesView({ user }) {
               >
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-xs font-semibold text-gray-700">
-                    {msg.senderName}
+                    {msg.isSelf
+    ? (user?.fullName || user?.displayName || "You")
+    : (selectedConv.participantNames
+        ? Object.entries(selectedConv.participantNames).find(([uid]) => uid !== user?.uid)?.[1]
+        : msg.senderName) || "Teammate"}
                   </span>
                   <span className="text-[10px] text-gray-400">
                     {msg.timeString}
