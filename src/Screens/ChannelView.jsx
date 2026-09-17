@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   collection,
   query,
@@ -6,6 +6,8 @@ import {
   orderBy,
   onSnapshot,
   addDoc,
+  doc,
+  updateDoc,
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "../firebase";
@@ -17,14 +19,29 @@ export default function ChannelView({ channel, user, onBack }) {
   const [text, setText] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const messagesEndRef = useRef(null);
+  const channelId = channel?.id;
+  const userId = user?.uid;
 
-  // 1. Listen for real-time channel messages
+  // Helper function to update read timestamp using Date.getTime()
+  const markChannelAsRead = useCallback(() => {
+    if (channelId && userId) {
+      localStorage.setItem(
+        `lastRead_channel_${userId}_${channelId}`,
+        String(new Date().getTime())
+      );
+    }
+  }, [channelId, userId]);
+
+  // 1. Listen for real-time channel messages & update last read
   useEffect(() => {
-    if (!channel?.id) return;
+    if (!channelId || !userId) return;
+
+    // Immediately mark read on component load
+    markChannelAsRead();
 
     const q = query(
       collection(db, "messages"),
-      where("channelId", "==", channel.id),
+      where("channelId", "==", channelId),
       orderBy("timestamp", "asc")
     );
 
@@ -44,33 +61,45 @@ export default function ChannelView({ channel, user, onBack }) {
         };
       });
       setMessages(fetchedMessages);
+
+      // Keep marking read when new messages arrive while viewing
+      markChannelAsRead();
     });
 
     return () => unsubscribe();
-  }, [channel?.id, user?.uid]);
+  }, [channelId, markChannelAsRead, userId, user?.uid]);
 
-  // 2. Auto-scroll to bottom whenever new messages arrive
+  // 2. Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const handleSend = async (e) => {
     e.preventDefault();
-    if (!text.trim()) return;
+    if (!text.trim() || !channel?.id) return;
 
     const messageText = text.trim();
     setText("");
     setShowEmojiPicker(false);
 
     try {
+      // Add message to firestore
       await addDoc(collection(db, "messages"), {
         channelId: channel.id,
         senderId: user?.uid || "anonymous",
         senderName: user?.fullName || user?.displayName || "User",
         text: messageText,
         timestamp: serverTimestamp(),
-        seen: false,
       });
+
+      // Update parent channel document's updatedAt timestamp for unread tracking
+      const channelRef = doc(db, "channels", channel.id);
+      await updateDoc(channelRef, {
+        updatedAt: serverTimestamp(),
+      });
+
+      // Mark channel read for current sender
+      markChannelAsRead();
     } catch (error) {
       console.error("Error sending message:", error);
     }
@@ -136,7 +165,7 @@ export default function ChannelView({ channel, user, onBack }) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Composer with Active Emoji Picker */}
+      {/* Input Composer */}
       <div className="relative shrink-0 border-t border-gray-200 bg-white">
         {showEmojiPicker && (
           <div className="absolute bottom-14 left-4 z-10 flex gap-1 rounded-2xl border border-gray-200 bg-white p-2 shadow-lg">
@@ -158,7 +187,7 @@ export default function ChannelView({ channel, user, onBack }) {
 
         <form
           onSubmit={handleSend}
-          className="flex items-center gap-2 border-t border-gray-200 p-3 bg-white"
+          className="flex items-center gap-2 p-3 bg-white"
         >
           <button
             type="button"

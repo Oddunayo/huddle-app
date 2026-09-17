@@ -11,7 +11,7 @@ export default function HomeScreen({ user, onLogout }) {
   const [selectedChannel, setSelectedChannel] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
- const [channels, setChannels] = useState([]);
+  const [channels, setChannels] = useState([]);
 
   // Listen to channels in real time from Firestore
   useEffect(() => {
@@ -26,6 +26,37 @@ export default function HomeScreen({ user, onLogout }) {
     return () => unsubscribe();
   }, []);
 
+  // Check if a channel has unread messages relative to localStorage
+  const isChannelUnread = (channel) => {
+    if (selectedChannel?.id === channel.id) return false;
+
+    const key = `lastRead_channel_${user?.uid}_${channel.id}`;
+    const lastRead = localStorage.getItem(key);
+
+    // Initial load: Set lastRead timestamp for existing channels so historical ones don't start as unread
+    if (!lastRead) {
+      localStorage.setItem(key, String(new Date().getTime()));
+      return false;
+    }
+
+    const channelTime = channel.updatedAt?.toDate
+      ? channel.updatedAt.toDate().getTime()
+      : 0;
+
+    return channelTime > parseInt(lastRead, 10);
+  };
+
+  const handleSelectChannel = (channel) => {
+    // Save current timestamp to clear unread indicator
+    if (user?.uid) {
+      localStorage.setItem(
+        `lastRead_channel_${user.uid}_${channel.id}`,
+        String(new Date().getTime())
+      );
+    }
+    setSelectedChannel(channel);
+  };
+
   const handleCreateChannel = async (newChannel) => {
     try {
       await addDoc(collection(db, "channels"), {
@@ -33,6 +64,7 @@ export default function HomeScreen({ user, onLogout }) {
         description: newChannel.description || "",
         lastMessage: "Channel created",
         createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
       });
     } catch (error) {
       console.error("Error creating channel:", error);
@@ -62,15 +94,13 @@ export default function HomeScreen({ user, onLogout }) {
           <span className="text-xl">💬</span>
           <span className="text-lg font-bold text-gray-900">Huddle</span>
 
-           <button
+          <button
             onClick={handleShareApp}
             className="rounded-full bg-purple-50 px-3 py-1.5 text-xs font-semibold text-purple-600 hover:bg-purple-100 cursor-pointer"
           >
             🔗 Share Link
           </button>
         </div>
-
-       
 
         <div className="flex items-center gap-3">
           {/* Create Channel '+' Icon */}
@@ -98,26 +128,34 @@ export default function HomeScreen({ user, onLogout }) {
             </h2>
 
             <div className="space-y-1">
-              {channels.map((ch) => (
-                <button
-                  key={ch.id}
-                  onClick={() => setSelectedChannel(ch)}
-                  className="flex w-full items-center justify-between rounded-xl p-3 text-left transition-colors hover:bg-gray-50"
-                >
-                  <div>
-                    <div className="flex items-center gap-1.5 font-bold text-gray-900">
-                      <span className="text-gray-400">#</span>
-                      <span>{ch.name}</span>
+              {channels.map((ch) => {
+                const hasUnread = isChannelUnread(ch);
+
+                return (
+                  <button
+                    key={ch.id}
+                    onClick={() => handleSelectChannel(ch)}
+                    className="flex w-full items-center justify-between rounded-xl p-3 text-left transition-colors hover:bg-gray-50"
+                  >
+                    <div>
+                      <div className="flex items-center gap-1.5 font-bold text-gray-900">
+                        <span className="text-gray-400">#</span>
+                        <span className={hasUnread ? "font-bold text-gray-900" : "font-semibold text-gray-700"}>
+                          {ch.name}
+                        </span>
+                      </div>
+                      <p className="mt-0.5 text-xs text-gray-500">
+                        {ch.lastMessage}
+                      </p>
                     </div>
-                    <p className="mt-0.5 text-xs text-gray-500">
-                      {ch.lastMessage}
-                    </p>
-                  </div>
-                  {ch.unread && (
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#0CC8D4]"></span>
-                  )}
-                </button>
-              ))}
+
+                    {/* Unread indicator dot */}
+                    {hasUnread && (
+                      <span className="h-2.5 w-2.5 rounded-full bg-purple-600 shrink-0"></span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
