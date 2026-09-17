@@ -39,7 +39,7 @@ export default function ChannelView({ channel, user, onBack }) {
     }
   }, [channelId, userId]);
 
-  // 1. Listen for real-time channel messages & reactions (retains optimistic messages)
+  // 1. Listen for real-time channel messages & reactions
   useEffect(() => {
     if (!channelId || !userId) return;
 
@@ -67,13 +67,7 @@ export default function ChannelView({ channel, user, onBack }) {
             : "Just now",
         };
       });
-
-      // Preserve pending optimistic messages until server write finishes
-      setMessages((prev) => {
-        const pending = prev.filter((m) => m.id.startsWith("temp_"));
-        return [...fetchedMessages, ...pending];
-      });
-
+      setMessages(fetchedMessages);
       markChannelAsRead();
     });
 
@@ -163,56 +157,38 @@ export default function ChannelView({ channel, user, onBack }) {
     }
   };
 
-  // Non-blocking, concurrent write execution
   const handleSend = async (e) => {
     e.preventDefault();
     if (!text.trim() || !channelId) return;
 
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     if (channelId && userId) {
-      deleteDoc(doc(db, "channels", channelId, "typing", userId)).catch(() => {});
+      deleteDoc(doc(db, "channels", channelId, "typing", userId));
     }
 
     const messageText = text.trim();
     setText("");
     setShowEmojiPicker(false);
 
-    // Instant optimistic render
-    const tempId = `temp_${Date.now()}`;
-    const optimisticMsg = {
-      id: tempId,
-      channelId: channel.id,
-      senderId: user?.uid || "anonymous",
-      senderName: user?.fullName || user?.displayName || "You",
-      text: messageText,
-      reactions: {},
-      isSelf: true,
-      timeString: "Just now",
-    };
-
-    setMessages((prev) => [...prev, optimisticMsg]);
-
     try {
-      // Execute message and channel updates simultaneously
-      await Promise.all([
-        addDoc(collection(db, "messages"), {
-          channelId: channel.id,
-          senderId: user?.uid || "anonymous",
-          senderName: user?.fullName || user?.displayName || "User",
-          text: messageText,
-          reactions: {},
-          timestamp: serverTimestamp(),
-        }),
-        updateDoc(doc(db, "channels", channel.id), {
-          lastMessage: messageText,
-          updatedAt: serverTimestamp(),
-        }),
-      ]);
+      await addDoc(collection(db, "messages"), {
+        channelId: channel.id,
+        senderId: user?.uid || "anonymous",
+        senderName: user?.fullName || user?.displayName || "User",
+        text: messageText,
+        reactions: {},
+        timestamp: serverTimestamp(),
+      });
+
+      const channelRef = doc(db, "channels", channel.id);
+      await updateDoc(channelRef, {
+        lastMessage: messageText,
+        updatedAt: serverTimestamp(),
+      });
 
       markChannelAsRead();
     } catch (error) {
       console.error("Error sending message:", error);
-      setMessages((prev) => prev.filter((m) => m.id !== tempId));
     }
   };
 
@@ -375,7 +351,7 @@ export default function ChannelView({ channel, user, onBack }) {
             type="text"
             value={text}
             onChange={handleTyping}
-            placeholder={"Message #" + (channel?.name || "general")}
+            placeholder={`Message #${channel?.name || "general"}`}
             className="flex-1 rounded-full border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
           <button

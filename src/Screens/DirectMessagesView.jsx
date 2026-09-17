@@ -54,7 +54,7 @@ export default function DirectMessagesView({ user }) {
     return () => unsubscribe();
   }, [userId]);
 
-  // 2. Real-time message streaming for DM (with optimistic retention fix)
+  // 2. Real-time message streaming for DM
   useEffect(() => {
     if (!convId || !userId) return;
 
@@ -78,13 +78,7 @@ export default function DirectMessagesView({ user }) {
             : "Just now",
         };
       });
-
-      // Retain optimistic local messages while server write completes
-      setMessages((prev) => {
-        const pending = prev.filter((m) => m.id.startsWith("temp_"));
-        return [...fetched, ...pending];
-      });
-
+      setMessages(fetched);
       markDmAsRead();
     });
 
@@ -219,50 +213,34 @@ export default function DirectMessagesView({ user }) {
     }
   };
 
-  // Instant execution handler with concurrent non-blocking writes
   const handleSend = async (e) => {
     e.preventDefault();
     if (!text.trim() || !convId) return;
 
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    deleteDoc(doc(db, "directMessages", convId, "typing", userId)).catch(() => {});
+    deleteDoc(doc(db, "directMessages", convId, "typing", userId));
 
     const messageText = text.trim();
     setText("");
     setShowEmojiPicker(false);
 
-    const tempId = `temp_${Date.now()}`;
-    const optimisticMsg = {
-      id: tempId,
-      senderId: userId,
-      senderName: user?.fullName || user?.displayName || "You",
-      text: messageText,
-      reactions: {},
-      isSelf: true,
-      timeString: "Just now",
-    };
-
-    setMessages((prev) => [...prev, optimisticMsg]);
-
     try {
-      await Promise.all([
-        addDoc(collection(db, "directMessages", convId, "messages"), {
-          senderId: userId,
-          senderName: user?.fullName || user?.displayName || "User",
-          text: messageText,
-          reactions: {},
-          timestamp: serverTimestamp(),
-        }),
-        updateDoc(doc(db, "directMessages", convId), {
-          lastMessage: messageText,
-          updatedAt: serverTimestamp(),
-        }),
-      ]);
+      await addDoc(collection(db, "directMessages", convId, "messages"), {
+        senderId: userId,
+        senderName: user?.fullName || user?.displayName || "User",
+        text: messageText,
+        reactions: {},
+        timestamp: serverTimestamp(),
+      });
+
+      await updateDoc(doc(db, "directMessages", convId), {
+        lastMessage: messageText,
+        updatedAt: serverTimestamp(),
+      });
 
       markDmAsRead();
     } catch (error) {
       console.error("Error sending DM:", error);
-      setMessages((prev) => prev.filter((m) => m.id !== tempId));
     }
   };
 
