@@ -145,7 +145,7 @@ export default function HomeScreen({ user, onLogout }) {
                         </span>
                       </div>
                       <p className="mt-0.5 text-xs text-gray-500">
-                        {ch.lastMessage}
+                        {ch.lastMessage || "No messages yet"}
                       </p>
                     </div>
 
